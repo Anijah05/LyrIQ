@@ -34,4 +34,4 @@ serviceAccountKey.json
 
 # Testing
 .coverage
-htmlcov/
+htmlcov/.env
