@@ -630,3 +630,31 @@ For questions or issues, contact the backend team:
 - [Django REST Framework](https://www.django-rest-framework.org/)
 - [Genius API Docs](https://docs.genius.com/)
 - [Python Decouple](https://pypi.org/project/python-decouple/)
+
+FRONT END REQUIREMENTS
+
+cd frontend
+
+nano ~/.zshrc
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"       # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+(CTRL + O, press enter, CTRL + X to exit, enter)
+
+cd ~
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
+
+
+source ~/.zshrc
+
+command -v nvm
+
+nvm install 22
+nvm use 22
+node -v
+
+cd ~/Lyriq/LyrIQ/frontend
+npm install
+npm run dev
