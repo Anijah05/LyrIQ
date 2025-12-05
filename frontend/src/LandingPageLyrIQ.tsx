@@ -4,9 +4,8 @@ import styles from "./LandingPageLyrIQ.module.css";
 // ========== ICONS ==========
 import CalendarBlank from "./assets/UX_DESIGN_icon/CalendarBlank.svg";
 import Ellipse1 from "./assets/UX_DESIGN_icon/Ellipse_1.svg";
-// (add other icons if you need them later, e.g. Group, Play, etc.)
 
-// ========== IMAGES (NO /source IN PATH) ==========
+// ========== IMAGES ==========
 import BackgroundImage from "./assets/UX_DESIGN_img/Background_Image.png";
 import Music from "./assets/UX_DESIGN_img/MUSIC.png";
 import Music1 from "./assets/UX_DESIGN_img/MUSIC-1.png";
@@ -22,13 +21,60 @@ import Logo1 from "./assets/UX_DESIGN_img/logo_a.png";
 
 import { fetchLyricChallenge, type LyricChallenge } from "./api/lyrics";
 
-
+// ========= FIREBASE AUTH =========
+import {
+  auth,
+  googleProvider,
+  signInWithPopup,
+  signOut,
+} from "./firebase";
+import type { User } from "firebase/auth";
 
 const LandingPageLyrIQ: FunctionComponent = () => {
   const [challenge, setChallenge] = useState<LyricChallenge | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Auth state
+  const [user, setUser] = useState<User | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  // ========== GOOGLE LOGIN / LOGOUT ==========
+  const handleLoginClick = async () => {
+    try {
+      setAuthError(null);
+      const result = await signInWithPopup(auth, googleProvider);
+      const loggedInUser = result.user;
+      setUser(loggedInUser);
+
+      console.log("Logged in as:", loggedInUser.email);
+      // If you want to send the ID token to your backend:
+      // const idToken = await loggedInUser.getIdToken();
+      // await fetch("http://localhost:8000/api/auth/firebase", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     Authorization: `Bearer ${idToken}`,
+      //   },
+      // });
+    } catch (err: any) {
+      console.error("Google login error:", err);
+      setAuthError("Google login failed. Please try again.");
+    }
+  };
+
+  const handleLogoutClick = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      setAuthError(null);
+    } catch (err: any) {
+      console.error("Logout error:", err);
+      setAuthError("Could not log out. Please try again.");
+    }
+  };
+
+  // ========== LIVE GAME (BACKEND) ==========
   const handleGenerateChallenge = async () => {
     setLoading(true);
     setError(null);
@@ -44,9 +90,9 @@ const LandingPageLyrIQ: FunctionComponent = () => {
     }
   };
 
+  // Placeholder signup – you can replace with real API later
   const handleSignupClick = () => {
     console.log("Signup clicked!");
-    // Later you can replace this with a real signup flow or API call
   };
 
   return (
@@ -71,7 +117,15 @@ const LandingPageLyrIQ: FunctionComponent = () => {
             </div>
 
             <div className={styles.container3}>
-              <b className={styles.remastered}>LOGIN</b>
+              {/* LOGIN CHIP – now clickable, keeps same styling */}
+              <button
+                type="button"
+                className={styles.remastered}
+                onClick={user ? handleLogoutClick : handleLoginClick}
+                style={{ background: "transparent", border: "none", padding: 0, cursor: "pointer" }}
+              >
+                {user ? "LOGOUT" : "LOGIN"}
+              </button>
             </div>
           </div>
 
@@ -87,6 +141,15 @@ const LandingPageLyrIQ: FunctionComponent = () => {
             Enter your email to get early access, new features,
             and exclusive game modes.
           </div>
+
+          {/* Show who is logged in (optional small line) */}
+          {user && (
+            <div className={styles.container6} style={{ marginBottom: "0.75rem" }}>
+              <div className={styles.earlyAccessInfo}>
+                Signed in as {user.displayName || user.email}
+              </div>
+            </div>
+          )}
 
           <div className={styles.container4}>
             <div className={styles.input}>
@@ -114,6 +177,18 @@ const LandingPageLyrIQ: FunctionComponent = () => {
               </div>
             </div>
           </div>
+
+          {authError && (
+            <div
+              style={{
+                marginTop: "8px",
+                fontSize: "12px",
+                color: "#ff6b6b",
+              }}
+            >
+              {authError}
+            </div>
+          )}
         </div>
       </div>
 
