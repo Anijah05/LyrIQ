@@ -8,7 +8,11 @@ from difflib import SequenceMatcher
 from .models import Challenge, ChallengeAttempt
 from .serializers import ChallengeSerializer, ChallengeDetailSerializer, ChallengeAttemptSerializer
 from .services.lyrics_service import lyrics_service
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+import logging
 
+logger = logging.getLogger(__name__)
 
 # ===== LYRICS ENDPOINTS =====
 
@@ -63,7 +67,7 @@ def get_lyrics(request):
 
 
 # ===== CHALLENGE ENDPOINTS =====
-
+@method_decorator(csrf_exempt, name='dispatch')
 class ChallengeViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Challenge CRUD operations
@@ -75,7 +79,7 @@ class ChallengeViewSet(viewsets.ModelViewSet):
         """
         Allow anyone to view challenges, but require auth to create/edit
         """
-        if self.action in ['list', 'retrieve']:
+        if self.action in ['list', 'retrieve', 'submit_answer', 'reveal_answer']:
             return [AllowAny()]
         return [IsAuthenticated()]
     
@@ -117,16 +121,21 @@ class ChallengeViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(challenges, many=True)
         return Response(serializer.data)
     
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], permission_classes=[AllowAny])
     def submit_answer(self, request, pk=None):
         """
         Submit an answer to a challenge
         POST /api/challenges/:id/submit_answer/
-        Body: {"answer": "user's answer", "hints_used": 0}
         """
         challenge = self.get_object()
         submitted_answer = request.data.get('answer', '').strip()
         hints_used = request.data.get('hints_used', 0)
+        
+        logger.info(f"\n=== SUBMIT ANSWER DEBUG ===")
+        logger.info(f"Challenge: {challenge.song_title}")
+        logger.info(f"Correct answer: '{challenge.correct_answer}'")
+        logger.info(f"User submitted: '{submitted_answer}'")
+        logger.info(f"Hints used: {hints_used}")
         
         if not submitted_answer:
             return Response(
@@ -136,19 +145,12 @@ class ChallengeViewSet(viewsets.ModelViewSet):
         
         # Check if answer is correct (with fuzzy matching)
         is_correct = check_answer(challenge.correct_answer, submitted_answer)
+        logger.info(f"Is correct: {is_correct}")
         
         # Calculate score (100 points - 10 per hint used)
         score = max(0, 100 - (hints_used * 10)) if is_correct else 0
-        
-        # Save attempt (only if user is authenticated)
-        if request.user.is_authenticated:
-            ChallengeAttempt.objects.create(
-                user=request.user,
-                challenge=challenge,
-                answer_submitted=submitted_answer,
-                is_correct=is_correct,
-                hints_used=hints_used
-            )
+        logger.info(f"Score: {score}")
+        logger.info(f"=== END DEBUG ===\n")
         
         return Response({
             'is_correct': is_correct,
@@ -157,7 +159,7 @@ class ChallengeViewSet(viewsets.ModelViewSet):
             'message': 'Correct!' if is_correct else 'Incorrect. Try again!'
         })
     
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], permission_classes=[AllowAny])
     def reveal_answer(self, request, pk=None):
         """
         Reveal the answer to a challenge
@@ -249,13 +251,32 @@ def check_answer(correct_answer, user_answer):
     correct = correct_answer.lower().strip()
     user = user_answer.lower().strip()
     
+    # Log for debugging
+    print(f"Comparing: '{correct}' vs '{user}'")
+    
     # Exact match
     if correct == user:
+        print("Exact match!")
         return True
     
-    # Fuzzy match (85% similarity threshold)
+    # Remove extra spaces
+    correct_no_space = correct.replace(" ", "")
+    user_no_space = user.replace(" ", "")
+    
+    if correct_no_space == user_no_space:
+        print("Match without spaces!")
+        return True
+    
+    # Fuzzy match (80% similarity threshold - more lenient)
     similarity = SequenceMatcher(None, correct, user).ratio()
-    return similarity >= 0.85
+    print(f"Similarity: {similarity}")
+    
+    if similarity >= 0.80:
+        print("Fuzzy match!")
+        return True
+    
+    print("No match")
+    return False
 
 
 # ===== LEADERBOARD ENDPOINT =====

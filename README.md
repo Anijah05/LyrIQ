@@ -658,3 +658,19 @@ node -v
 cd ~/Lyriq/LyrIQ/frontend
 npm install
 npm run dev
+
+
+
+
+
+Loading the front end and back end do the backend first
+
+cd backend
+source venv/bin/activate
+python3 manage.py runserver
+
+cd frontend
+npm run dev
+
+
+leave both running

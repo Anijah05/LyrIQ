@@ -1,0 +1,360 @@
+.container {
+    min-height: 100vh;
+    background: #000000;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .header {
+    width: 100%;
+    padding: 1.5rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #0a0a0a;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  
+  .backBtn {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  
+  .backBtn:hover {
+    background: #222;
+    border-color: #444;
+  }
+  
+  .progress {
+    display: flex;
+    gap: 3rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #ccc;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .challengeCard {
+    flex: 1;
+    max-width: 1100px;
+    margin: 3rem auto;
+    padding: 0 3rem;
+    width: 100%;
+  }
+  
+  .songInfo {
+    display: flex;
+    gap: 2.5rem;
+    align-items: flex-start;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  
+  .albumArt {
+    flex-shrink: 0;
+  }
+  
+  .albumPlaceholder {
+    width: 180px;
+    height: 180px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    color: white;
+    font-weight: 900;
+    box-shadow: 0 10px 40px rgba(255, 107, 107, 0.3);
+  }
+  
+  .songDetails {
+    flex: 1;
+    padding-top: 0.5rem;
+  }
+  
+  .songTitle {
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin: 0 0 0.75rem 0;
+    color: white;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+  }
+  
+  .artist {
+    font-size: 1.3rem;
+    color: #888;
+    margin: 0 0 1rem 0;
+    font-weight: 500;
+  }
+  
+  .genre {
+    display: inline-block;
+    background: #1a1a1a;
+    color: #ff6b6b;
+    padding: 0.4rem 1.2rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border: 1px solid #222;
+  }
+  
+  .lyricContext {
+    margin-bottom: 2.5rem;
+    padding: 2rem;
+    background: #0a0a0a;
+    border-radius: 8px;
+    border-left: 3px solid #ff6b6b;
+  }
+  
+  .contextLabel {
+    font-size: 0.8rem;
+    color: #666;
+    margin: 0 0 0.75rem 0;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+  }
+  
+  .contextLyric {
+    font-size: 1.2rem;
+    color: #ccc;
+    line-height: 1.7;
+    margin: 0;
+    font-style: italic;
+  }
+  
+  .challengeSection {
+    margin-bottom: 2.5rem;
+    padding: 2.5rem;
+    background: #0a0a0a;
+    border-radius: 8px;
+    border: 2px solid #1a1a1a;
+  }
+  
+  .challengeLabel {
+    font-size: 0.85rem;
+    color: #ff6b6b;
+    margin: 0 0 1.25rem 0;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  
+  .challengeLyric {
+    font-size: 2rem;
+    color: white;
+    line-height: 1.5;
+    margin: 0;
+    font-weight: 700;
+  }
+  
+  .answerSection {
+    margin-bottom: 2rem;
+  }
+  
+  .answerInput {
+    width: 100%;
+    padding: 1.25rem 1.75rem;
+    font-size: 1.2rem;
+    background: #0a0a0a;
+    border: 2px solid #1a1a1a;
+    border-radius: 8px;
+    margin-bottom: 1.25rem;
+    transition: all 0.2s;
+    font-weight: 600;
+    color: white;
+  }
+  
+  .answerInput::placeholder {
+    color: #444;
+  }
+  
+  .answerInput:focus {
+    outline: none;
+    border-color: #ff6b6b;
+    background: #0f0f0f;
+  }
+  
+  .buttons {
+    display: flex;
+    gap: 1.25rem;
+  }
+  
+  .submitBtn,
+  .skipBtn,
+  .backButton {
+    flex: 1;
+    padding: 1.25rem 2.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .submitBtn {
+    background: #ff6b6b;
+    color: white;
+  }
+  
+  .submitBtn:hover {
+    background: #ff5252;
+    transform: translateY(-1px);
+  }
+  
+  .submitBtn:active {
+    transform: translateY(0);
+  }
+  
+  .skipBtn {
+    background: #1a1a1a;
+    color: #888;
+    border: 1px solid #222;
+  }
+  
+  .skipBtn:hover {
+    background: #222;
+    color: #aaa;
+  }
+  
+  .feedback {
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    animation: slideIn 0.3s ease-out;
+    border: 2px solid;
+  }
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .correct {
+    background: rgba(78, 205, 196, 0.1);
+    border-color: #4ecdc4;
+  }
+  
+  .incorrect {
+    background: rgba(255, 107, 107, 0.1);
+    border-color: #ff6b6b;
+  }
+  
+  .feedbackMessage {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0 0 0.75rem 0;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .scoreEarned {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #4ecdc4;
+    margin: 0.5rem 0;
+  }
+  
+  .correctAnswer {
+    font-size: 1.1rem;
+    color: #ccc;
+    margin: 0.75rem 0 0 0;
+    font-weight: 600;
+  }
+  
+  .nextMessage {
+    font-size: 0.95rem;
+    color: #666;
+    margin: 0.75rem 0 0 0;
+    font-style: italic;
+  }
+  
+  .footer {
+    margin-top: 2rem;
+    text-align: center;
+    color: #444;
+    font-size: 0.85rem;
+    padding-bottom: 2rem;
+  }
+  
+  .loading,
+  .noChallenge,
+  .complete {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    padding: 4rem;
+  }
+  
+  .loading {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+  
+  .noChallenge h2,
+  .complete h1 {
+    margin: 0 0 2rem 0;
+    font-size: 3rem;
+    font-weight: 900;
+  }
+  
+  .scoreDisplay {
+    background: #0a0a0a;
+    padding: 2.5rem;
+    border-radius: 8px;
+    margin: 2rem 0;
+    border: 1px solid #1a1a1a;
+  }
+  
+  .finalScore {
+    font-size: 3.5rem;
+    font-weight: 900;
+    margin: 0 0 0.75rem 0;
+    color: #ff6b6b;
+  }
+  
+  .accuracy {
+    font-size: 1.2rem;
+    margin: 0;
+    color: #888;
+  }
+  
+  .backButton {
+    background: #ff6b6b;
+    color: white;
+    margin: 2rem auto 0;
+    display: block;
+  }
+  
+  .backButton:hover {
+    background: #ff5252;
+    transform: translateY(-1px);
+  }

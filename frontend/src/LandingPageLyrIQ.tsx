@@ -1,5 +1,8 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent, useState, useEffect } from "react";
 import styles from "./LandingPageLyrIQ.module.css";
+
+// ========== COMPONENTS ==========
+import ChallengeGame from "./components/ChallengeGame";
 
 // ========== ICONS ==========
 import CalendarBlank from "./assets/UX_DESIGN_icon/CalendarBlank.svg";
@@ -30,6 +33,14 @@ import {
 } from "./firebase";
 import type { User } from "firebase/auth";
 
+// ========= BACKEND API =========
+import { 
+  getLeaderboard, 
+  getAllChallenges,
+  type LeaderboardPlayer,
+  type Challenge 
+} from "./api/backend";
+
 const LandingPageLyrIQ: FunctionComponent = () => {
   const [challenge, setChallenge] = useState<LyricChallenge | null>(null);
   const [loading, setLoading] = useState(false);
@@ -39,24 +50,50 @@ const LandingPageLyrIQ: FunctionComponent = () => {
   const [user, setUser] = useState<User | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  // ========== GOOGLE LOGIN / LOGOUT ==========
+  // Backend data state
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardPlayer[]>([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+
+  // Level selection state - THIS IS KEY!
+  const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
+
+  useEffect(() => {
+    loadLeaderboard();
+    loadChallenges();
+  }, []);
+
+  const loadLeaderboard = async () => {
+    try {
+      const data = await getLeaderboard();
+      setLeaderboardData(data);
+      console.log('Loaded leaderboard:', data);
+    } catch (error) {
+      console.error('Error loading leaderboard:', error);
+    }
+  };
+
+  const loadChallenges = async () => {
+    try {
+      const data = await getAllChallenges();
+      setChallenges(data);
+      console.log('Loaded challenges:', data);
+    } catch (error) {
+      console.error('Error loading challenges:', error);
+    }
+  };
+
+  // Level click handler - sets selected level
+  const handleLevelClick = (level: number) => {
+    setSelectedLevel(level);
+  };
+
   const handleLoginClick = async () => {
     try {
       setAuthError(null);
       const result = await signInWithPopup(auth, googleProvider);
       const loggedInUser = result.user;
       setUser(loggedInUser);
-
       console.log("Logged in as:", loggedInUser.email);
-      // If you want to send the ID token to your backend:
-      // const idToken = await loggedInUser.getIdToken();
-      // await fetch("http://localhost:8000/api/auth/firebase", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     Authorization: `Bearer ${idToken}`,
-      //   },
-      // });
     } catch (err: any) {
       console.error("Google login error:", err);
       setAuthError("Google login failed. Please try again.");
@@ -74,11 +111,9 @@ const LandingPageLyrIQ: FunctionComponent = () => {
     }
   };
 
-  // ========== LIVE GAME (BACKEND) ==========
   const handleGenerateChallenge = async () => {
     setLoading(true);
     setError(null);
-
     try {
       const result = await fetchLyricChallenge();
       setChallenge(result);
@@ -90,16 +125,23 @@ const LandingPageLyrIQ: FunctionComponent = () => {
     }
   };
 
-  // Placeholder signup – you can replace with real API later
   const handleSignupClick = () => {
     console.log("Signup clicked!");
   };
 
+  // IF LEVEL SELECTED, SHOW GAME
+  if (selectedLevel) {
+    return (
+      <ChallengeGame 
+        level={selectedLevel} 
+        onBack={() => setSelectedLevel(null)} 
+      />
+    );
+  }
+
+  // OTHERWISE SHOW LANDING PAGE
   return (
     <div className={styles.landingPageLyriq}>
-      {/* ------------------------------------------------ */}
-      {/* HERO SECTION */}
-      {/* ------------------------------------------------ */}
       <div className={styles.heroSection}>
         <img className={styles.musicIcon} alt="" src={Music} />
         <div className={styles.background} />
@@ -117,7 +159,6 @@ const LandingPageLyrIQ: FunctionComponent = () => {
             </div>
 
             <div className={styles.container3}>
-              {/* LOGIN CHIP – now clickable, keeps same styling */}
               <button
                 type="button"
                 className={styles.remastered}
@@ -142,7 +183,6 @@ const LandingPageLyrIQ: FunctionComponent = () => {
             and exclusive game modes.
           </div>
 
-          {/* Show who is logged in (optional small line) */}
           {user && (
             <div className={styles.container6} style={{ marginBottom: "0.75rem" }}>
               <div className={styles.earlyAccessInfo}>
@@ -154,7 +194,7 @@ const LandingPageLyrIQ: FunctionComponent = () => {
           <div className={styles.container4}>
             <div className={styles.input}>
               <div className={styles.divplaceholder}>
-                <div className={styles.remastered}>WHAT’S YOUR EMAIL?</div>
+                <div className={styles.remastered}>WHAT'S YOUR EMAIL?</div>
               </div>
             </div>
 
@@ -166,11 +206,7 @@ const LandingPageLyrIQ: FunctionComponent = () => {
           </div>
 
           <div className={styles.container6}>
-            <img
-              className={styles.calendarblankIcon}
-              alt=""
-              src={CalendarBlank}
-            />
+            <img className={styles.calendarblankIcon} alt="" src={CalendarBlank} />
             <div className={styles.container7}>
               <div className={styles.earlyAccessInfo}>
                 Early Access Launch: 12/23
@@ -179,29 +215,19 @@ const LandingPageLyrIQ: FunctionComponent = () => {
           </div>
 
           {authError && (
-            <div
-              style={{
-                marginTop: "8px",
-                fontSize: "12px",
-                color: "#ff6b6b",
-              }}
-            >
+            <div style={{ marginTop: "8px", fontSize: "12px", color: "#ff6b6b" }}>
               {authError}
             </div>
           )}
         </div>
       </div>
 
-      {/* ------------------------------------------------ */}
-      {/* FEATURES + LEVELS SECTION */}
-      {/* ------------------------------------------------ */}
       <div className={styles.sectionNews}>
         <div className={styles.container8}>
           <div className={styles.container9}>
             <div className={styles.remastered}>Games &amp; More</div>
 
             <div className={styles.features}>
-              {/* Column 1 */}
               <div className={styles.container10}>
                 <div className={styles.container11}>
                   <b className={styles.featureTitle}>Real Lyrics, Real Challenge</b>
@@ -222,7 +248,6 @@ const LandingPageLyrIQ: FunctionComponent = () => {
                 </div>
               </div>
 
-              {/* Column 2 */}
               <div className={styles.container10}>
                 <div className={styles.container12}>
                   <b className={styles.featureTitle3}>Exclusive Game Modes</b>
@@ -244,10 +269,14 @@ const LandingPageLyrIQ: FunctionComponent = () => {
             </div>
           </div>
 
-          {/* LEVELS SECTION */}
           <div className={styles.container16}>
-            {/* LEVEL 1 */}
-            <div className={styles.container17}>
+            <div 
+              className={styles.container17}
+              onClick={() => handleLevelClick(1)}
+              style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
               <img className={styles.img63281Icon} alt="" src={Img6328} />
               <b className={styles.levelTitle}>LEVEL 1 – Warm Up Mode</b>
               <div className={styles.levelDescription}>
@@ -260,8 +289,13 @@ const LandingPageLyrIQ: FunctionComponent = () => {
               </div>
             </div>
 
-            {/* LEVEL 2 */}
-            <div className={styles.container17}>
+            <div 
+              className={styles.container17}
+              onClick={() => handleLevelClick(2)}
+              style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
               <img className={styles.img63281Icon} alt="" src={Img6330} />
               <b className={styles.levelTitle}>LEVEL 2 – Remix Mode</b>
               <div className={styles.levelDescription2}>
@@ -274,12 +308,17 @@ const LandingPageLyrIQ: FunctionComponent = () => {
               </div>
             </div>
 
-            {/* LEVEL 3 */}
-            <div className={styles.container17}>
+            <div 
+              className={styles.container17}
+              onClick={() => handleLevelClick(3)}
+              style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
               <img className={styles.img63311Icon} alt="" src={Img6331} />
               <b className={styles.levelTitle}>LEVEL 3 – Expert Mode</b>
               <div className={styles.levelDescription3}>
-                Minimal hints. Deeper cuts. No obvious hooks. You’ll need memory,
+                Minimal hints. Deeper cuts. No obvious hooks. You'll need memory,
                 instinct, and flow to guess the lyric correctly. This mode
                 separates casual listeners from true lyric lovers.
               </div>
@@ -295,9 +334,6 @@ const LandingPageLyrIQ: FunctionComponent = () => {
         </div>
       </div>
 
-      {/* ------------------------------------------------ */}
-      {/* TOP PLAYERS / LEADERBOARD SECTION */}
-      {/* ------------------------------------------------ */}
       <div className={styles.gameplaysSection}>
         <img className={styles.backgroundImageIcon} alt="" src={BackgroundImage} />
         <div className={styles.background3} />
@@ -305,9 +341,8 @@ const LandingPageLyrIQ: FunctionComponent = () => {
         <div className={styles.container20}>
           <div className={styles.container21}>
             <div className={styles.modoZumbiAgora}>TOP PLAYERS</div>
-
             <div className={styles.sectionDescription}>
-              Meet the current leaders dominating LyrIQ’s global scoreboard.
+              Meet the current leaders dominating LyrIQ's global scoreboard.
               <br />
               These players hold the longest streaks, fastest correct guesses,
               and highest overall accuracy across every genre.
@@ -322,106 +357,56 @@ const LandingPageLyrIQ: FunctionComponent = () => {
           </div>
         </div>
 
-        {/* PLAYER STATS ROWS */}
-        <div className={styles.container23}>
-          <div className={styles.container7}>
-            <div className={styles.playerStats}>
-              <b>Rank:</b> #1 &nbsp;
-              <b>Longest Streak:</b> 143 correct guesses &nbsp;
-              <b>Fastest Guess:</b> 0.92s &nbsp;
-              <b>Accuracy:</b> 97% &nbsp;
-              <b>Most Played Genre:</b> Hip-Hop &nbsp;
-              <b>Signature Mode:</b> Expert Mode
+        {leaderboardData.length > 0 ? (
+          <>
+            {leaderboardData.slice(0, 4).map((player) => (
+              <React.Fragment key={player.rank}>
+                <div className={styles.container25}>
+                  <div className={styles.container7}>
+                    <div className={styles.playerHandle}>@{player.username}</div>
+                  </div>
+                </div>
+                <div className={styles.container23}>
+                  <div className={styles.container7}>
+                    <div className={styles.playerStats}>
+                      <b>Rank:</b> #{player.rank} &nbsp;
+                      <b>Score:</b> {player.score} &nbsp;
+                      <b>Completed:</b> {player.challenges_completed} &nbsp;
+                      <b>Created:</b> {player.challenges_created}
+                    </div>
+                  </div>
+                </div>
+              </React.Fragment>
+            ))}
+          </>
+        ) : (
+          <>
+            <div className={styles.container23}>
+              <div className={styles.container7}>
+                <div className={styles.playerStats}>
+                  <b>Rank:</b> #1 &nbsp; <b>Longest Streak:</b> 143 correct guesses
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-
-        <div className={styles.container25}>
-          <div className={styles.container7}>
-            <div className={styles.playerHandle}>@NTMONSUMI</div>
-          </div>
-        </div>
-
-        <div className={styles.container27}>
-          <div className={styles.container7}>
-            <div className={styles.playerStats}>
-              <b>Rank:</b> #4 &nbsp;
-              <b>Longest Streak:</b> 96 correct guesses &nbsp;
-              <b>Fastest Guess:</b> 1.08s &nbsp;
-              <b>Accuracy:</b> 95% &nbsp;
-              <b>Most Played Genre:</b> Hip-Hop &nbsp;
-              <b>Signature Mode:</b> Expert Mode
+            <div className={styles.container25}>
+              <div className={styles.container7}>
+                <div className={styles.playerHandle}>@NTMONSUMI</div>
+              </div>
             </div>
-          </div>
-        </div>
-
-        <div className={styles.container29}>
-          <div className={styles.container7}>
-            <div className={styles.playerHandle}>@3arth2u_</div>
-          </div>
-        </div>
-
-        <div className={styles.container31}>
-          <div className={styles.container7}>
-            <div className={styles.playerHandle}>@WHOMPWHO</div>
-          </div>
-        </div>
-
-        <div className={styles.playerHandleWrapper}>
-          <div className={styles.container7}>
-            <div className={styles.playerHandle}>@LyricLegend</div>
-          </div>
-        </div>
-
-        <div className={styles.container33}>
-          <div className={styles.container7}>
-            <div className={styles.playerStats}>
-              <b>Rank:</b> #2 &nbsp;
-              <b>Longest Streak:</b> 118 correct guesses
-              <br />
-              <b>Fastest Guess:</b> 1.10s
-              <br />
-              <b>Accuracy:</b> 94%
-              <br />
-              <b>Most Played Genre:</b> R&amp;B &nbsp;
-              <b>Signature Mode:</b> Remix Mode
-            </div>
-          </div>
-        </div>
-
-        <div className={styles.container35}>
-          <div className={styles.container7}>
-            <div className={styles.playerStats}>
-              <b>Rank:</b> #3 &nbsp;
-              <b>Longest Streak:</b> 102 correct guesses &nbsp;
-              <b>Fastest Guess:</b> 1.34s
-              <br />
-              <b>Accuracy:</b> 92%
-              <br />
-              <b>Most Played Genre:</b> Pop &nbsp;
-              <b>Signature Mode:</b> Warm-Up Mode
-            </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
 
-      {/* ------------------------------------------------ */}
-      {/* LIVE GAME SECTION – BACKEND CONNECTED */}
-      {/* ------------------------------------------------ */}
       <section className={styles.liveGameSection}>
         <div className={styles.liveGameHeader}>
           <h2>TRY THE GAME LIVE</h2>
-          <p>
-            Generate a real lyric challenge powered by your backend and see
-            how fast you can fill in the missing words.
+          <p>Generate a real lyric challenge powered by your backend.</p>
+          <p style={{ fontSize: '12px', marginTop: '10px' }}>
+            Available challenges: {challenges.length}
           </p>
         </div>
 
-        <button
-          className={styles.liveGameButton}
-          onClick={handleGenerateChallenge}
-          disabled={loading}
-        >
+        <button className={styles.liveGameButton} onClick={handleGenerateChallenge} disabled={loading}>
           {loading ? "Loading challenge..." : "Generate Lyric Challenge"}
         </button>
 
@@ -429,25 +414,11 @@ const LandingPageLyrIQ: FunctionComponent = () => {
 
         {challenge && (
           <div className={styles.challengeCard}>
-            <h3>
-              {challenge.title} — {challenge.artist}
-            </h3>
-
-            <div className={styles.challengeSection}>
-              <h4>Preview</h4>
-              <p>{challenge.preview}</p>
-            </div>
-
+            <h3>{challenge.title} — {challenge.artist}</h3>
             <div className={styles.challengeSection}>
               <h4>Challenge Line</h4>
               <p>{challenge.challengeLine}</p>
             </div>
-
-            <div className={styles.challengeSection}>
-              <h4>Missing Words Version</h4>
-              <p>{challenge.maskedLine}</p>
-            </div>
-
             <div className={styles.challengeAnswer}>
               <span className={styles.answerLabel}>Answer:</span>{" "}
               <span className={styles.answerText}>{challenge.answer}</span>
@@ -456,13 +427,9 @@ const LandingPageLyrIQ: FunctionComponent = () => {
         )}
       </section>
 
-      {/* ------------------------------------------------ */}
-      {/* CTA SECTION */}
-      {/* ------------------------------------------------ */}
       <div className={styles.ctaSection}>
         <img className={styles.musicIcon2} alt="" src={Music1} />
         <div className={styles.background6} />
-
         <div className={styles.container43}>
           <div className={styles.image10Traced2} />
           <div className={styles.container44}>
@@ -473,7 +440,6 @@ const LandingPageLyrIQ: FunctionComponent = () => {
               Be one of the first to try new modes, track your stats,
               and compete on the global leaderboard.
             </div>
-
             <div className={styles.container45}>
               <div className={styles.input}>
                 <div className={styles.divplaceholder}>
@@ -488,18 +454,12 @@ const LandingPageLyrIQ: FunctionComponent = () => {
             </div>
           </div>
         </div>
-
         <img className={styles.logo1Icon2} alt="" src={Logo1} />
       </div>
 
-      {/* ------------------------------------------------ */}
-      {/* FOOTER */}
-      {/* ------------------------------------------------ */}
       <div className={styles.footer}>
         <div className={styles.footerText}>
           LyrIQ uses the Genius API to access publicly available lyrics.
-          All song lyrics, album art, and artist names belong to their
-          respective copyright owners.
           <br />
           This project is for entertainment and educational purposes only.
         </div>
